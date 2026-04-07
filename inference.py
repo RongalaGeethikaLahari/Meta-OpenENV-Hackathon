@@ -5,6 +5,11 @@ from openai import OpenAI
 from client import EmailEnvClient
 from core.models import EmailAction
 
+import ssl
+import certifi
+
+ssl._create_default_https_context = ssl.create_default_context(cafile=certifi.where())
+
 # Load environment variables
 load_dotenv()
 
@@ -29,7 +34,7 @@ def decide(email):
 
 async def run_task(task):
     # ✅ CORRECT INIT (NO await here)
-    env = EmailEnvClient(base_url="http://localhost:8000")
+    env = EmailEnvClient(base_url="https://adamk29-meta-openenv-hackathon.hf.space")
 
     # ✅ Open connection
     await env.__aenter__()

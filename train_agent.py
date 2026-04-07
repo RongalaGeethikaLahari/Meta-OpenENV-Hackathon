@@ -6,6 +6,10 @@ import asyncio
 from client import EmailEnvClient
 from core.models import EmailAction
 
+import ssl
+import certifi
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # ---------- ACTION SPACE ----------
 
@@ -56,7 +60,7 @@ def encode_state(obs):
 
 async def train():
 
-    env = EmailEnvClient(base_url="http://localhost:8000")
+    env = EmailEnvClient(base_url="https://adamk29-meta-openenv-hackathon.hf.space")
     await env.__aenter__()
 
     model = PolicyNet()

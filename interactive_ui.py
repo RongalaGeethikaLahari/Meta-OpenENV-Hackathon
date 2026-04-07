@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 from client import EmailEnvClient
 from core.models import EmailAction
 
+import ssl
+import certifi
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 def decide(email):
     email = email.lower()
@@ -17,7 +21,7 @@ def decide(email):
 
 
 async def run_episode(task):
-    env = EmailEnvClient(base_url="http://localhost:8000")
+    env = EmailEnvClient(base_url="https://adamk29-meta-openenv-hackathon.hf.space")
     await env.__aenter__()
 
     rewards = []

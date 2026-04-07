@@ -5,6 +5,10 @@ from client import EmailEnvClient
 from core.models import EmailAction
 from train_agent import PolicyNet, encode_state, ACTIONS
 
+import ssl
+import certifi
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # ---------- LOAD MODEL ----------
 
@@ -26,7 +30,7 @@ async def test_environment():
 
     print("\n===== TESTING ON ENVIRONMENT =====\n")
 
-    env = EmailEnvClient(base_url="http://localhost:8000")
+    env = EmailEnvClient(base_url="https://adamk29-meta-openenv-hackathon.hf.space")
     await env.__aenter__()
 
     try:

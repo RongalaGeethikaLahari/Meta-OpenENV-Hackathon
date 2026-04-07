@@ -3,6 +3,10 @@ import time
 import webbrowser
 import sys
 
+import ssl
+import certifi
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # ---------- STEP 1: START SERVER ----------
 
@@ -57,7 +61,7 @@ def launch_ui():
 def main():
 
     # 1. Start server
-    server = start_server()
+    # server = start_server()
 
     # Wait for server to boot
     time.sleep(5)
@@ -86,7 +90,8 @@ def main():
         print("\n🛑 Stopping demo...")
 
     finally:
-        server.terminate()
+        print("Exited!")
+        # server.terminate()
 
 
 if __name__ == "__main__":

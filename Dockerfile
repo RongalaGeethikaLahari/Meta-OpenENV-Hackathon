@@ -20,8 +20,4 @@ ENV PYTHONPATH=/app
 EXPOSE 7860
 
 # Map 7860 → 8000 using socat
-CMD ["sh", "-c", "\
-    apt-get update && apt-get install -y socat && \
-    uvicorn server.app:app --host 0.0.0.0 --port 8000 & \
-    socat TCP-LISTEN:7860,fork TCP:localhost:8000 \
-"]
+CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860"]

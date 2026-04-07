@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
     curl \
+    socat \
     && rm -rf /var/lib/apt/lists/*
 
 COPY . .

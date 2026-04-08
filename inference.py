@@ -8,21 +8,38 @@ from core.models import EmailAction
 import ssl
 import certifi
 
-ssl._create_default_https_context = ssl.create_default_context(cafile=certifi.where())
+# ✅ Fix SSL issues (important for Mac / HF Spaces)
+ssl._create_default_https_context = ssl.create_default_context(
+    cafile=certifi.where()
+)
 
-# Load environment variables
+# ---------- LOAD ENV ----------
+
 load_dotenv()
 
-API_KEY = os.getenv("HF_TOKEN")
-BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
+# ✅ MUST use these (for hackathon validator)
+API_KEY = os.environ.get("API_KEY")
+BASE_URL = os.environ.get("API_BASE_URL")
+
+# Fallback for local testing (optional)
+if API_KEY is None:
+    API_KEY = os.getenv("HF_TOKEN")
+
+if BASE_URL is None:
+    BASE_URL = "https://router.huggingface.co/v1"
+
 MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
 
-# OpenAI client (required by hackathon)
-client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
+# ---------- OPENAI CLIENT ----------
 
+client = OpenAI(
+    base_url=BASE_URL,
+    api_key=API_KEY
+)
 
-# Simple rule-based agent (safe + reproducible)
-def decide(email):
+# ---------- RULE-BASED FALLBACK ----------
+
+def fallback_decide(email):
     email = email.lower()
 
     if "free" in email or "win" in email:
@@ -32,11 +49,47 @@ def decide(email):
     return "important"
 
 
-async def run_task(task):
-    # ✅ CORRECT INIT (NO await here)
-    env = EmailEnvClient(base_url="https://adamk29-meta-openenv-hackathon.hf.space")
+# ---------- LLM DECISION (REQUIRED) ----------
 
-    # ✅ Open connection
+async def llm_decide(email):
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are an intelligent email triage agent. Classify emails into: spam, important, or urgent."
+                },
+                {
+                    "role": "user",
+                    "content": f"Email:\n{email}\n\nAnswer ONLY one word: spam / important / urgent"
+                }
+            ],
+            temperature=0.2
+        )
+
+        output = response.choices[0].message.content.lower().strip()
+
+        if "spam" in output:
+            return "spam"
+        if "urgent" in output:
+            return "urgent"
+        return "important"
+
+    except Exception as e:
+        print(f"⚠️ LLM failed, using fallback: {e}")
+        return fallback_decide(email)
+
+
+# ---------- RUN TASK ----------
+
+async def run_task(task):
+
+    env = EmailEnvClient(
+        base_url="https://adamk29-meta-openenv-hackathon.hf.space"
+    )
+
     await env.__aenter__()
 
     try:
@@ -49,9 +102,11 @@ async def run_task(task):
 
         while True:
             step += 1
+
             email = result.observation.email_text
 
-            action_text = decide(email)
+            # ✅ USE LLM (THIS IS THE KEY FIX)
+            action_text = await llm_decide(email)
 
             action = EmailAction(
                 action_type="classify",
@@ -73,7 +128,6 @@ async def run_task(task):
             if done:
                 break
 
-        # Safe score calculation
         score = sum(rewards) / len(rewards) if rewards else 0.0
 
         print(
@@ -82,9 +136,10 @@ async def run_task(task):
         )
 
     finally:
-        # ✅ Proper close (MANDATORY)
         await env.__aexit__(None, None, None)
 
+
+# ---------- MAIN ----------
 
 async def main():
     for task in ["easy", "medium", "hard"]:

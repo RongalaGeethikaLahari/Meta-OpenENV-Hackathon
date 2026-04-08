@@ -1,3 +1,41 @@
 name: email-triage-env
 version: "1.0.0"
-description: Production-grade email triage environment
+description: Production-grade RL environment for email triage with sequential decision making
+
+authors:
+  - name: Koda Adam
+  - name: Rongala Geethika Lahari
+  - name: Bobbili Revanth
+
+environment:
+  entry_point: server.app:app
+
+api:
+  type: openenv
+  observation:
+    type: EmailObservation
+  action:
+    type: EmailAction
+
+metadata:
+  category: reinforcement-learning
+  domain: email-automation
+  difficulty: medium
+
+deployment:
+  platform: huggingface
+  url: https://adamk29-meta-openenv-hackathon.hf.space
+
+features:
+  - sequential_decision_making
+  - reward_shaping
+  - dynamic_dataset
+  - rl_training_support
+  - interactive_ui
+
+tags:
+  - rl
+  - openenv
+  - email
+  - automation
+  - hackathon

@@ -188,7 +188,7 @@ python demo.py
 
 ## 1. Clone Repo
 ```bash
-git clone https://github.com/<your-username>/Meta-OpenENV-Hackathon.git  
+git clone https://github.com/RongalaGeethikaLahari/Meta-OpenENV-Hackathon.git 
 cd Meta-OpenENV-Hackathon  
 ```
 ---
@@ -301,8 +301,8 @@ MIT
 
 ---
 # Authors
-- Koda Adam
 - Rongala Geethika Lahari
+- Koda Adam
 - Bobbili Revanth
 ---
 

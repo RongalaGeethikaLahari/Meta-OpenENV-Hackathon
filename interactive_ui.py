@@ -79,7 +79,7 @@ def run(task):
 
 with gr.Blocks() as demo:
     gr.Markdown("# 🤖 RL Email Triage Environment")
-    gr.Markdown("Trajectory-based RL interaction (NOT classification)")
+    gr.Markdown("Trajectory-based RL interaction")
 
     task = gr.Dropdown(["easy", "medium", "hard"], value="easy")
 

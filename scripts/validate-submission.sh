@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# validate-submission.sh — OpenEnv Submission Validator
+# validate-submission.sh — OpenEnv Submission Validator (FINAL FIXED)
 #
 
 set -uo pipefail
@@ -16,6 +16,8 @@ if [ -t 1 ]; then
 else
   RED='' GREEN='' YELLOW='' BOLD='' NC=''
 fi
+
+# ---------------- TIMEOUT HANDLER ----------------
 
 run_with_timeout() {
   local secs="$1"; shift
@@ -36,14 +38,7 @@ run_with_timeout() {
   fi
 }
 
-portable_mktemp() {
-  local prefix="${1:-validate}"
-  mktemp "${TMPDIR:-/tmp}/${prefix}-XXXXXX" 2>/dev/null || mktemp
-}
-
-CLEANUP_FILES=()
-cleanup() { rm -f "${CLEANUP_FILES[@]+"${CLEANUP_FILES[@]}"}"; }
-trap cleanup EXIT
+# ---------------- INPUT ----------------
 
 PING_URL="${1:-}"
 REPO_DIR="${2:-.}"
@@ -55,6 +50,21 @@ fi
 
 REPO_DIR="$(cd "$REPO_DIR" && pwd)"
 PING_URL="${PING_URL%/}"
+
+# ---------------- AUTO FIX HF URL ----------------
+
+if [[ "$PING_URL" == *"huggingface.co/spaces"* ]]; then
+  USER_NAME=$(echo "$PING_URL" | awk -F'/' '{print $4}')
+  SPACE_NAME=$(echo "$PING_URL" | awk -F'/' '{print $5}')
+
+  # lowercase conversion
+  USER_NAME=$(echo "$USER_NAME" | tr '[:upper:]' '[:lower:]')
+  SPACE_NAME=$(echo "$SPACE_NAME" | tr '[:upper:]' '[:lower:]')
+
+  PING_URL="https://${USER_NAME}-${SPACE_NAME}.hf.space"
+fi
+
+# ---------------- LOGGING ----------------
 
 PASS=0
 
@@ -73,8 +83,9 @@ log "Ping URL: $PING_URL"
 log "Step 1/3: Checking HF Space..."
 
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-  -H "Content-Type: application/json" -d '{}' \
-  "$PING_URL/reset")
+  "$PING_URL/reset" \
+  -H "Content-Type: application/json" \
+  --data-raw '{}')
 
 if [ "$HTTP_CODE" = "200" ]; then
   pass "HF Space responds correctly"
@@ -92,7 +103,7 @@ if [ ! -f "$REPO_DIR/Dockerfile" ]; then
   exit 1
 fi
 
-if run_with_timeout "$DOCKER_BUILD_TIMEOUT" docker build "$REPO_DIR" > /dev/null 2>&1; then
+if run_with_timeout "$DOCKER_BUILD_TIMEOUT" docker build -t openenv-test "$REPO_DIR" > /dev/null 2>&1; then
   pass "Docker build succeeded"
 else
   fail "Docker build failed"

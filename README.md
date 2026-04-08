@@ -43,8 +43,8 @@ Train an intelligent agent that can:
 ---
 
 # 🏗️ Project Architecture
-
-hackathon/
+```
+/
 ├── core/                  # Core logic (dataset, reward, models)
 ├── server/                # OpenEnv server (FastAPI)
 ├── data/                  # Email dataset
@@ -61,7 +61,7 @@ hackathon/
 ├── pyproject.toml
 ├── uv.lock
 └── README.md
-
+```
 ---
 
 # 📊 Environment Design
@@ -133,9 +133,9 @@ Policy Gradient (REINFORCE):
 ---
 
 ## ▶️ Train Agent
-
+```bash
 python train_agent.py
-
+```
 Model saved as:
 email_agent.pth
 
@@ -144,9 +144,9 @@ email_agent.pth
 # 🧪 Testing
 
 ## ▶️ Test Model
-
+```bash
 python test_agent.py
-
+```
 Includes:
 - Environment evaluation
 - Custom samples
@@ -154,15 +154,15 @@ Includes:
 ---
 
 # ⚡ Inference (Baseline)
-
+```bash
 python inference.py
-
+```
 ---
 
 # 🎨 Interactive UI
-
+```bash
 python interactive_ui.py
-
+```
 Open:
 http://127.0.0.1:7860
 
@@ -174,9 +174,9 @@ Features:
 ---
 
 # 🔥 Full Demo
-
+```bash
 python demo.py
-
+```
 ✔ Train  
 ✔ Test  
 ✔ Launch UI  
@@ -187,35 +187,35 @@ python demo.py
 # 🛠️ Setup Guide
 
 ## 1. Clone Repo
-
+```bash
 git clone https://github.com/<your-username>/Meta-OpenENV-Hackathon.git  
 cd Meta-OpenENV-Hackathon  
-
+```
 ---
 
 ## 2. Create Environment
-
+```bash
 python -m venv env  
 source env/bin/activate  
-
+```
 ---
 
 ## 3. Install Dependencies
-
+```bash
 pip install -r requirements.txt  
-
+```
 ---
 
 ## 4. Run Server (optional)
-
+```bash
 uvicorn server.app:app --port 8000  
-
+```
 ---
 
 # 🌐 Hosted Environment
-
+```bash
 https://adamk29-meta-openenv-hackathon.hf.space
-
+```
 ---
 
 # ⚠️ Common Errors & Fixes
@@ -227,13 +227,17 @@ SSL: CERTIFICATE_VERIFY_FAILED
 
 Fix:
 
+```bash
 pip install certifi  
 export SSL_CERT_FILE=$(python -m certifi)  
+```
 
 OR:
 
+```bash
 import ssl, certifi  
 ssl._create_default_https_context = ssl.create_default_context(cafile=certifi.where())  
+```
 
 ---
 
@@ -253,8 +257,10 @@ Do NOT use:
 
 # 🐳 Docker (Optional)
 
+```bash
 docker build -t email-env .  
-docker run -p 8000:8000 email-env  
+docker run -p 8000:8000 email-env
+```  
 
 ---
 
@@ -270,10 +276,12 @@ docker run -p 8000:8000 email-env
 
 # 🚀 Developer Usage
 
+```bash
 env = EmailEnvClient(base_url="https://adamk29-meta-openenv-hackathon.hf.space")
 
 obs = await env.reset()  
 obs = await env.step(action)  
+```
 
 ---
 

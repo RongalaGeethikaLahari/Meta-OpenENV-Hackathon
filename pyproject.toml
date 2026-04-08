@@ -1,0 +1,20 @@
+[project]
+name = "email-triage-openenv"
+version = "0.1.0"
+description = "OpenEnv Email Triage RL Environment"
+authors = [
+    { name = "Koda Adam" }, { name = "Rongala Geethika Lahari" }, { name = "Bobbili Revanth" }
+]
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "openenv-core",
+]
+
+[project.scripts]
+server = "server.app:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

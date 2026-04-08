@@ -66,7 +66,7 @@ async def train():
     model = PolicyNet()
     optimizer = optim.Adam(model.parameters(), lr=0.003)
 
-    EPISODES = 300
+    EPISODES = 50
     GAMMA = 0.99
     ENTROPY_BETA = 0.01
 

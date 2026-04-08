@@ -28,12 +28,20 @@ class EmailEnv(Environment):
         task = kwargs.get("task", "easy")
 
         # ---- DATA SPLIT ----
+        dataset_size = len(self.dataset)
+        
+        # Split ratios
+        easy_end = int(0.2 * dataset_size)
+        medium_end = int(0.6 * dataset_size)
+        
         if task == "easy":
-            emails = self.dataset[:100]
+            emails = self.dataset[:easy_end]
+        
         elif task == "medium":
-            emails = self.dataset[100:400]
-        else:
-            emails = self.dataset[400:800]
+            emails = self.dataset[easy_end:medium_end]
+        
+        else:  # hard
+            emails = self.dataset[medium_end:]
 
         emails = emails.copy()
         random.shuffle(emails)

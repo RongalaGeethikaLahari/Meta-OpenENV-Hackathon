@@ -70,70 +70,71 @@ class EmailEnv(Environment):
     def step(self, action: EmailAction, **kwargs):
 
         if self.done:
-            return self._final_obs(0.0)
-
+            return self._final_obs(0.01)
+    
         self.state_obj.step_count += 1
         self.processed += 1
-
+    
         gt = self.current_email.get("label")
-
-        # -------- NEW BALANCED RL REWARD --------
-        
-        reward = 0.0
-        
-        # 1. Correct classification
+    
+        # -------- NORMALIZED REWARD SYSTEM (STRICT 0 < reward < 1) --------
+    
+        score = 0.0
+    
+        # 1️⃣ Classification score (0.1 → 0.4)
         if action.content == gt:
-            reward += 2.0
+            score += 0.4
         else:
-            reward -= 0.5
-        
-        # 2. Urgent handling (important but not destructive)
+            score += 0.1
+    
+        # 2️⃣ Urgent handling (0 → 0.3)
         if gt == "urgent":
             if action.content == "urgent":
-                reward += 1.5
+                score += 0.3
             else:
-                reward -= 1.0
+                score += 0.0
                 self.missed_urgent += 1
-        
-        # 3. Small step penalty
-        reward -= 0.01
-        
-        # 4. Progress reward (VERY IMPORTANT)
-        progress = 1.0 / (len(self.inbox) + 1)
-        reward += progress
-
-
-        # 6️⃣ Stability bonus (consistent good actions)
-        if reward > 0:
-            reward += 0.2
-
-        # ---------------------------------
-
+        else:
+            score += 0.2  # non-urgent handled safely
+    
+        # 3️⃣ Progress reward (0 → 0.2)
+        total = self.state_obj.total_emails + 1
+        progress = 1.0 - (len(self.inbox) / total)
+        score += 0.2 * progress
+    
+        # 4️⃣ Efficiency (0 → 0.1)
+        efficiency = max(0.0, 1.0 - (self.state_obj.step_count / total))
+        score += 0.1 * efficiency
+    
+        # -------- CLAMP FINAL REWARD --------
+    
+        reward = min(max(score, 0.01), 0.99)
+    
         self.total_reward += reward
         self.state_obj.score = self.total_reward
-
+    
         # -------- TRANSITION --------
-
+    
         if len(self.inbox) > 0:
             self.current_email = self.inbox.pop(0)
         else:
             self.done = True
-
-        # -------- TERMINATION --------
-
-        # Too many critical failures
+    
+        # -------- TERMINATION CONDITIONS --------
+    
+        # Too many urgent misses → soft penalty
         if self.missed_urgent >= 3:
             self.done = True
-            reward -= 5.0
-
-        # Episode completion bonus
+            reward = 0.05  # still valid range
+    
+        # Episode completion reward (normalized)
         if self.done:
-            completion_bonus = 5.0 * (1 - self.missed_urgent / (self.processed + 1))
-            reward += completion_bonus
-            self.total_reward += completion_bonus
-
-        # ---------------------------------
-
+            completion = 1.0 - (self.missed_urgent / (self.processed + 1))
+            reward = min(max(completion, 0.01), 0.99)
+            self.total_reward += reward
+    
+        # ---------------------------------------
+    
         return self._build_obs(reward, "Step complete")
 
     # ---------------- OBS BUILDER ----------------
